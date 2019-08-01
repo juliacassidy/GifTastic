@@ -1,23 +1,59 @@
 
+// preloaded buttons and add button
+var athletesArray = ["Ben Roethlisberger", "Drew Brees", "Serena Williams", "Kobe Bryant", "Stephen Curry", "Alex Morgan"];
+
 $(document).ready(function () {
-	var movies = ["Hercules", "The Lion King", "The Dark Knight", "Jaws", "Star Wars", "The Great Gatsby", "Minions"];
-
-	// add buttons for movies i picked
-	function renderButtons() {
-		$("#movie-buttons").empty();
-		for (i = 0; i < movies.length; i++) {
-			$("#movie-buttons").append("<button class='btn btn-success' data-movie='" + movies[i] + "'>" + movies[i] + "</button>");
-		}
+    for (var i = 0; i < athletesArray.length; i++) {
+        $("#athlete-buttons").append("<button type='button' onclick='searchGif(\"" + athletesArray[i] + "\")' class='btn btn-primary' value=' " + athletesArray[i] + "'> " + athletesArray[i] + " </button>");
     }
-    
-    renderButtons();
+});
 
-	// adding a button for movie entered in bar
-	$("#add-movie").on("click", function () {
-		event.preventDefault();
-		var movie = $("#movie-input").val().trim();
-		movies.push(movie);
-		renderButtons();
-		return;
+function athleteButtonClicked() {
+    var userInput = $('#athlete-input').val();
+    searchGif(userInput);
+}
+
+function submitButtonClicked() {
+    var userInput = $('#athlete-input').val();
+
+    if (userInput) {
+        $('#athlete-buttons').append("<button type='button' onclick='searchGif(\"" + userInput + "\")' class='btn btn-primary' value=' " + userInput + "'> " + userInput + " </button>");
+    }
+}
+
+// get from api at gif
+function searchGif(gifName) {
+    $.ajax({
+        url: 'https://api.giphy.com/v1/gifs/search?q= ' + gifName + ' &api_key=bhPOzhtjHNaUR4lSwVdeaVqxkdwxtUiS&limit=10',
+        type: 'GET',
+    })
+        .done(function (response) {
+            displayGif(response);
+        })
+}
+
+//add animation and still
+function displayGif(response) {
+    $('#athletes').empty();
+    for (var i = 0; i < response.data.length; i++) {
+        var rating = "<div class='ratings'> Rating:  " + (response.data[i].rating) + " </div>";
+        var image = rating + '<img src= " ' + response.data[i].images.fixed_height_still.url +
+            '" data-still=" ' + response.data[i].images.fixed_height_still.url +
+            ' " data-animate=" ' + response.data[i].images.fixed_height.url + '" data-state="still" class="movImage" style= "width:250px; height:250px">';
+
+        image = '<div class="col-md-4">' + image + "</div>";
+        $('#athletes').append(image);
+    }
+
+    $('.movImage').on('click', function () {
+        var state = $(this).attr('data-state');
+        if (state == 'still') {
+            $(this).attr('src', $(this).attr("data-animate"));
+            $(this).attr('data-state', 'animate');
+        } else {
+            $(this).attr('src', $(this).attr("data-still"));
+            $(this).attr('data-state', 'still');
+        }
+
     });
-} )
+}
